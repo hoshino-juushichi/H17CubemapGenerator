@@ -62,7 +62,6 @@ namespace Hoshino17
 		readonly PropertyBool _outputCubemapProp = new PropertyBool(SettingsKeys.OutputCubemap, true);
 		readonly PropertyBool _outputGenerateMipmapProp = new PropertyBool(SettingsKeys.OutputGenerateMipmap, true);
 		readonly PropertyBool _fillMatcapOutsideByEdgeColorProp = new PropertyBool(SettingsKeys.FillMatcapOutsideByEdgeColor, false);
-		readonly PropertyEnum<SystemLanguage> _languageProp = new PropertyEnum<SystemLanguage>(SettingsKeys.Language, SystemLanguage.English);
 		readonly PropertyObject<Camera> _specificCameraProp = new PropertyObject<Camera>(null);
 		string _lastAssetPath = string.Empty;
 		readonly PropertyAsset<Cubemap> _cubemapProp = new PropertyAsset<Cubemap>(SettingsKeys.LastAssetCubemap, null);
@@ -72,6 +71,7 @@ namespace Hoshino17
 		readonly PropertyAsset<Texture2D> _textureBottomProp = new PropertyAsset<Texture2D>(SettingsKeys.LastAssetTextureBottom, null);
 		readonly PropertyAsset<Texture2D> _textureFrontProp = new PropertyAsset<Texture2D>(SettingsKeys.LastAssetTextureFront, null);
 		readonly PropertyAsset<Texture2D> _textureBackProp = new PropertyAsset<Texture2D>(SettingsKeys.LastAssetTextureBack, null);
+		readonly PropertyEnum<SystemLanguage> _languageProp;
 
 		public bool initialized => _initialized;
 		public string adviceMessage => _adviceMessage;
@@ -125,6 +125,7 @@ namespace Hoshino17
 			this.generatorInstance.previewCube.transform.SetParent(null);
 			this.previewScene.AddGameObject(this.generatorInstance.previewCube);
 
+			_languageProp = new PropertyEnum<SystemLanguage>(SettingsKeys.Language, _localization.language);
 			_localization.language = _languageProp.value;
 			_languageProp.onValueChanged += (value) =>
 			{
