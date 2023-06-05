@@ -9,8 +9,12 @@ namespace Hoshino17
 		{
 			Unsupported,
 			BuiltInPipeline,
+#if USING_URP 
 			UniversalPipeline,
+#endif
+#if USING_HDRP 
 			HDPipeline
+#endif
 		}
  
 		public static PipelineType DetectPipeline()
@@ -19,15 +23,20 @@ namespace Hoshino17
 			if (GraphicsSettings.renderPipelineAsset != null)
 			{
 				var srpType = GraphicsSettings.renderPipelineAsset.GetType().ToString();
+#if USING_HDRP 
 				if (srpType.Contains("HDRenderPipelineAsset"))
 				{
 					return PipelineType.HDPipeline;
 				}
-				else if (srpType.Contains("UniversalRenderPipelineAsset") || srpType.Contains("LightweightRenderPipelineAsset"))
+				else 
+#endif
+#if USING_URP 
+				if (srpType.Contains("UniversalRenderPipelineAsset") || srpType.Contains("LightweightRenderPipelineAsset"))
 				{
 					return PipelineType.UniversalPipeline;
 				}
 				else
+#endif
 				{
 					return PipelineType.Unsupported;
 				}

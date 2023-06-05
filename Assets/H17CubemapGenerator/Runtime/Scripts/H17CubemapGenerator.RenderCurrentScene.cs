@@ -1,8 +1,10 @@
-﻿#define NO_SubmitRenderRequest
-using System;
+﻿using System;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
+#if USING_URP 
+using UnityEngine.Rendering.Universal;
+#endif
 
 #nullable enable
 #pragma warning disable 618
@@ -46,18 +48,27 @@ namespace Hoshino17
 				LoadCubemapFacesFromCubemap(cubemap);
 				DestroyImmediate(cubemap);
 			}
-			else if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+			else
+#if USING_HDRP
+			if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 			{
 				_onUpdate -= OnRenderCamera;
 				_onUpdate += OnRenderCamera;
 			}
-			else // Universal
+			else
+#endif
+#if USING_URP
+			if (_pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 			{
 				_rendererCamera.targetTexture = _cubemapRT; // update rendererCamera
 				_renderPipelineFook = new RenderPipelineFook(
 					onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
 				);
 			}
+#endif
+			{
+				throw new InvalidOperationException("Unsupported");
+			}			
 		}
 
 		void OnRenderCamera()
@@ -148,46 +159,45 @@ namespace Hoshino17
 				default: throw new ArgumentException("face:" + face);
 			}
 			camera.transform.rotation = rot;
-
 			camera.targetTexture = rt;
 			camera.ResetProjectionMatrix();
 			camera.projectionMatrix = new Matrix4x4(
-					new Vector4(1f, 0f, 0f, 0f),
-					new Vector4(0f, -1f, 0f, 0f),
-					new Vector4(0f, 0f, 1f, 0f),
-					new Vector4(0f, 0f, 0f, 1f)) * camera.projectionMatrix;
-
+				new Vector4(1f, 0f, 0f, 0f),
+				new Vector4(0f,-1f, 0f, 0f),
+				new Vector4(0f, 0f, 1f, 0f),
+				new Vector4(0f, 0f, 0f, 1f)) * camera.projectionMatrix;
 			var lastInverseCulling = GL.invertCulling;
 			GL.invertCulling = true;
-
+#if USING_URP 
 			if (_pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 			{
-				var targetType = RenderPipelineManager.currentPipeline.GetType();
-				_renderSingleCamera ??= targetType.GetMethod("RenderSingleCamera", new Type[] { typeof(ScriptableRenderContext), typeof(Camera) });
-				_renderSingleCamera.Invoke(targetType, new object[] { context, camera });
-//				UniversalRenderPipeline.RenderSingleCamera(context, camera);
+				UniversalRenderPipeline.RenderSingleCamera(context, camera);
 
 				// RenderSingleCamera is warned as obsolete, but the alternative is an error.(2023/05/22)
 				// https://forum.unity.com/threads/rendersinglecamera-is-obsolete-but-the-suggested-solution-has-error.1354835/
 			}
-			else if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+			else
+#endif
+#if USING_HDRP 
+			if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 			{
-#if NO_SubmitRenderRequest
-				camera.Render();
-#else
+#if UNITY_2022_1_OR_NEWER
 				RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
 				if (RenderPipeline.SupportsRenderRequest(camera, request))
 				{
 					request.destination = rt;
-					request.face = faceIndex;
+					request.face = face;
 					RenderPipeline.SubmitRenderRequest(camera, request);
 				}
 				else
 				{
 					Debug.LogWarning($"HDPipeline: RenderRequest failed");
 				}
+#else
+				camera.Render();
 #endif
 			}
+#endif
 
 			GL.invertCulling = lastInverseCulling;
 			camera.targetTexture = null;
