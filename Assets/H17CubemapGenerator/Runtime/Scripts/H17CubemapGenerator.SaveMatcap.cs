@@ -6,6 +6,9 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using UnityEngine.Rendering;
+#if USING_URP 
+using UnityEngine.Rendering.Universal;
+#endif
 
 #nullable enable
 #pragma warning disable 618 // obsolete
@@ -71,8 +74,11 @@ namespace Hoshino17
 				desc.enableRandomWrite = true;
 				_tempRT = RenderTexture.GetTemporary(desc);
 
-				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline ||
-					_generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline
+#if USING_HDRP 
+					|| _generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline
+#endif
+					)
 				{
 					_generator._onUpdate -= OnRenderCamera;
 					_generator._onUpdate += OnRenderCamera;
@@ -154,15 +160,21 @@ namespace Hoshino17
 			{
 				camera.targetTexture = _tempRT;
 
+#if USING_URP 
 				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 				{
-					var targetType = RenderPipelineManager.currentPipeline.GetType(); // assumed to be UnityEngine.Rendering.Universal.UniversalRenderPipeline
-					var methodInfo = targetType.GetMethod("RenderSingleCamera", new Type[] { typeof(ScriptableRenderContext), typeof(Camera)});
-					methodInfo.Invoke(targetType, new object[] { context, camera });
-					//UniversalRenderPipeline.RenderSingleCamera(context, camera);
+					UniversalRenderPipeline.RenderSingleCamera(context, camera);
 				}
-				else if (_generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+				else
+#endif
+#if USING_HDRP
+				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 				{
+				}
+				else
+#endif
+				{
+					throw new InvalidOperationException("Unsupported");
 				}
 
 				camera.targetTexture = null;

@@ -184,7 +184,7 @@ namespace Hoshino17
 				else
 					UnityEngine.Object.DestroyImmediate(obj);
 #else
-                UnityEngine.Object.Destroy(obj);
+				UnityEngine.Object.Destroy(obj);
 #endif
 			}
 		}
@@ -201,18 +201,23 @@ namespace Hoshino17
 			_pipelineType = RenderPipelineUtils.DetectPipeline();
 			switch (_pipelineType)
 			{
+#if USING_URP 
 				case RenderPipelineUtils.PipelineType.UniversalPipeline:
 					_shaderBlitter = FindShader("Honshino17/H17CubemapGenerator/BlitterURP");
 					_shaderPreview = FindShader("Honshino17/H17CubemapGenerator/PreviewURP");
 					break;
+#endif
+#if USING_HDRP 
 				case RenderPipelineUtils.PipelineType.HDPipeline:
 					_shaderBlitter = FindShader("Honshino17/H17CubemapGenerator/BlitterHDRP");
 					_shaderPreview = FindShader("Honshino17/H17CubemapGenerator/PreviewHDRP");
 					break;
+#endif
 				case RenderPipelineUtils.PipelineType.BuiltInPipeline:
 					_shaderBlitter = FindShader("Honshino17/H17CubemapGenerator/BlitterStandard");
 					_shaderPreview = FindShader("Honshino17/H17CubemapGenerator/PreviewStandard");
 					break;
+				default: throw new InvalidOperationException("Unsupported");
 			}
 
 			// Preview Mesh
@@ -394,6 +399,7 @@ namespace Hoshino17
 
 			// For HDRP-6Sided. Low Speedw.
 			// I really want to make the process similar to the subsequent URP version.(2023/06/04)
+#if USING_HDRP 
 			if ((_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline) &&
 				(_inputSource == InputSource.SixSided))
 			{
@@ -404,6 +410,7 @@ namespace Hoshino17
 				onCompleted?.Invoke();
 				yield break;
 			}
+#endif
 
 			// For URP
 			var targetSourceCamera = GetTargetCamera();
