@@ -6,13 +6,14 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using UnityEngine.Rendering;
-#if USING_URP 
+#if USING_URP
 using UnityEngine.Rendering.Universal;
 #endif
 
 #nullable enable
 #pragma warning disable 618 // obsolete
 #pragma warning disable 414 // The field '' is assigned but its value is never used
+#pragma warning disable 162 // Unreachable code detected
 
 namespace Hoshino17
 {
