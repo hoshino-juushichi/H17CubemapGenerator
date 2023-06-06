@@ -36,19 +36,6 @@ namespace Hoshino17
 		{
 			_renderStartTime = DateTime.Now;
 
-			if (_pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline)
-			{
-				_rendererCamera.RenderToCubemap(_cubemapRT);
-
-				// Make another Cubemap and take out each side
-				var format = _rendererCamera.allowHDR ? UnityEngine.Experimental.Rendering.DefaultFormat.HDR : UnityEngine.Experimental.Rendering.DefaultFormat.LDR;
-				var flags = UnityEngine.Experimental.Rendering.TextureCreationFlags.None;
-				var cubemap = new Cubemap(_textureWidth, format, flags);
-				_rendererCamera.RenderToCubemap(cubemap);
-				LoadCubemapFacesFromCubemap(cubemap);
-				DestroyImmediate(cubemap);
-			}
-			else
 #if USING_HDRP
 			if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 			{
@@ -65,7 +52,21 @@ namespace Hoshino17
 					onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
 				);
 			}
+			else
 #endif
+			if (_pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline)
+			{
+				_rendererCamera.RenderToCubemap(_cubemapRT);
+
+				// Make another Cubemap and take out each side
+				var format = _rendererCamera.allowHDR ? UnityEngine.Experimental.Rendering.DefaultFormat.HDR : UnityEngine.Experimental.Rendering.DefaultFormat.LDR;
+				var flags = UnityEngine.Experimental.Rendering.TextureCreationFlags.None;
+				var cubemap = new Cubemap(_textureWidth, format, flags);
+				_rendererCamera.RenderToCubemap(cubemap);
+				LoadCubemapFacesFromCubemap(cubemap);
+				DestroyImmediate(cubemap);
+			}
+			else
 			{
 				throw new InvalidOperationException("Unsupported");
 			}			
