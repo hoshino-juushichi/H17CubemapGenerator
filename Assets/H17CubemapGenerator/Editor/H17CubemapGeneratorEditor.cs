@@ -40,7 +40,7 @@ namespace Hoshino17
 		Rect _mainViewRect = new Rect();
 		public Rect mainViewRect => _mainViewRect;
 
-		[MenuItem("Tools/Hoshino17/H17CubemapGenerator", false, 1)]
+		[MenuItem("Tools/H17CubemapGenerator", false, 1)]
 		static void Create()
 		{
 			var window = GetWindow<H17CubemapGeneratorEditor>();
