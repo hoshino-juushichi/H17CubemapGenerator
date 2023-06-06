@@ -41,6 +41,7 @@ namespace Hoshino17
 		void SetEditorMouseDown();
 		void SetSourceCubamap(Cubemap cubamap);
 		void SetSourceTexture(CubemapFace face, Texture2D texture);
+		Action? onPipelineChanged { get; set; }
 #endif
 	}
 
@@ -128,6 +129,7 @@ namespace Hoshino17
 
 		public bool isSourceHDR => _isSourceHDR;
 		public RenderPipelineUtils.PipelineType pipelineType => _pipelineType;
+		public Action? onPipelineChanged { get; set; }
 
 #if UNITY_EDITOR
 		public GameObject previewSphere => _previewSphere;
@@ -170,6 +172,16 @@ namespace Hoshino17
 
 		void Update()
 		{
+			if (!isProcessing)
+			{
+				var pipelineType = RenderPipelineUtils.DetectPipeline();
+				if (_pipelineType != pipelineType)
+				{
+					_pipelineType = pipelineType;
+					OnPipelineChanged();
+				}
+			}
+
 			OnUpdateDragRotate();
 			_onUpdate?.Invoke();
 		}
@@ -238,10 +250,17 @@ namespace Hoshino17
 #endif
 		}
 
+		void OnPipelineChanged()
+		{
+			_onUpdate = null;
+			DisposeRenderCache();
+			Setup();
+			this.onPipelineChanged?.Invoke();
+		}
+
 		void DisposeRenderCache()
 		{
 			DisposeCachedFaces();
-			UpdatePreviewMeshTexture(null);
 
 			if (_cubemapRT != null)
 			{

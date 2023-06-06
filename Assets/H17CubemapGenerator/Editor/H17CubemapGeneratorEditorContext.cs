@@ -119,6 +119,7 @@ namespace Hoshino17
 			goGenerator.hideFlags = HideFlags.HideAndDontSave;
 			this.generatorInstance = goGenerator.GetComponent<H17CubemapGenerator>();
 			this.generatorInstance.SetEditorDragControl(true);
+			this.generatorInstance.onPipelineChanged += () => StartRedraw();
 
 			this.generatorInstance.previewSphere.transform.SetParent(null);
 			this.previewScene.AddGameObject(this.generatorInstance.previewSphere);
