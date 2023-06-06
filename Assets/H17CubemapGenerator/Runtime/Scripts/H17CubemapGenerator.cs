@@ -157,17 +157,7 @@ namespace Hoshino17
 		{
 			CleanupRenderCurrentScene();
 			DisposeRenderCache();
-
-			if (_materialBlitter != null)
-			{
-				DestroyUnityObject(_materialBlitter);
-			}
-
-			for (int i = 0; i < _previewMeshMaterials.Count; i++)
-			{
-				DestroyUnityObject(_previewMeshMaterials[i]);
-			}
-			_previewMeshMaterials.Clear();
+			DisposeMaterials();
 		}
 
 		void Update()
@@ -254,8 +244,23 @@ namespace Hoshino17
 		{
 			_onUpdate = null;
 			DisposeRenderCache();
+			DisposeMaterials();
 			Setup();
 			this.onPipelineChanged?.Invoke();
+		}
+
+		void DisposeMaterials()
+		{
+			if (_materialBlitter != null)
+			{
+				DestroyUnityObject(_materialBlitter);
+			}
+
+			for (int i = 0; i < _previewMeshMaterials.Count; i++)
+			{
+				DestroyUnityObject(_previewMeshMaterials[i]);
+			}
+			_previewMeshMaterials.Clear();
 		}
 
 		void DisposeRenderCache()
