@@ -2,7 +2,10 @@
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
-#if USING_URP 
+#if USING_HDRP
+using UnityEngine.Rendering.HighDefinition;
+#endif
+#if USING_URP
 using UnityEngine.Rendering.Universal;
 #endif
 
@@ -36,29 +39,37 @@ namespace Hoshino17
 		{
 			_renderStartTime = DateTime.Now;
 
-#if USING_HDRP
+/*
+ * #if UNITY_2023_1_OR_NEWER && USING_HDRP
 			if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 			{
+				//_rendererCamera.targetTexture = _cubemapRT; // update rendererCamera
+				//_renderPipelineFook = new RenderPipelineFook(
+				//	onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
+				//);
 				_onUpdate -= OnRenderCamera;
 				_onUpdate += OnRenderCamera;
 			}
 			else
 #endif
+*/
 #if USING_URP
 			if (_pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 			{
+#if UNITY_2023_1_OR_NEWER
+				_onUpdate -= OnRenderCamera;
+				_onUpdate += OnRenderCamera;
+#else
 				_rendererCamera.targetTexture = _cubemapRT; // update rendererCamera
 				_renderPipelineFook = new RenderPipelineFook(
 					onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
 				);
+#endif
 			}
 			else
 #endif
-			if (_pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline)
-			{
-				_rendererCamera.RenderToCubemap(_cubemapRT);
-
-				// Make another Cubemap and take out each side
+				{
+					_rendererCamera.RenderToCubemap(_cubemapRT);
 				var format = _rendererCamera.allowHDR ? UnityEngine.Experimental.Rendering.DefaultFormat.HDR : UnityEngine.Experimental.Rendering.DefaultFormat.LDR;
 				var flags = UnityEngine.Experimental.Rendering.TextureCreationFlags.None;
 				var cubemap = new Cubemap(_textureWidth, format, flags);
@@ -66,10 +77,6 @@ namespace Hoshino17
 				LoadCubemapFacesFromCubemap(cubemap);
 				DestroyImmediate(cubemap);
 			}
-			else
-			{
-				throw new InvalidOperationException("Unsupported");
-			}			
 		}
 
 		void OnRenderCamera()
@@ -172,23 +179,36 @@ namespace Hoshino17
 #if USING_URP 
 			if (_pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 			{
-				UniversalRenderPipeline.RenderSingleCamera(context, camera);
-
-				// RenderSingleCamera is warned as obsolete, but the alternative is an error.(2023/05/22)
-				// https://forum.unity.com/threads/rendersinglecamera-is-obsolete-but-the-suggested-solution-has-error.1354835/
-			}
-			else
-#endif
-#if USING_HDRP 
-			if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
-			{
-#if UNITY_2022_1_OR_NEWER
-				RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
+#if UNITY_2023_1_OR_NEWER
+				var request = new UniversalRenderPipeline.SingleCameraRequest();
 				if (RenderPipeline.SupportsRenderRequest(camera, request))
 				{
 					request.destination = rt;
 					request.face = face;
 					RenderPipeline.SubmitRenderRequest(camera, request);
+				}
+				else
+				{
+					Debug.LogWarning($"UniversalPipeline: RenderRequest failed");
+				}
+#else
+				UniversalRenderPipeline.RenderSingleCamera(context, camera);
+#endif
+				// RenderSingleCamera is warned as obsolete, but the alternative is an error.(2023/05/22)
+				// https://forum.unity.com/threads/rendersinglecamera-is-obsolete-but-the-suggested-solution-has-error.1354835/
+			}
+			else
+#endif
+#if USING_HDRP
+			if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+			{
+#if UNITY_2023_1_OR_NEWER
+				var request = new HDRenderPipeline.StandardRequest();
+				if (HDRenderPipeline.SupportsRenderRequest(camera, request))
+				{
+					request.destination = rt;
+					request.face = face;
+					HDRenderPipeline.SubmitRenderRequest(camera, request);
 				}
 				else
 				{

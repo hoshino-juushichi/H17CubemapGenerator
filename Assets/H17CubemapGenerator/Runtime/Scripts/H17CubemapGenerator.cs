@@ -154,8 +154,10 @@ namespace Hoshino17
 			_onStartExit?.Invoke();
 
 #if UNITY_EDITOR
+#if UNITY_2021_OR_NEWER
 			RenderPipelineManager.activeRenderPipelineTypeChanged -= OnPipelineChanged;
 			RenderPipelineManager.activeRenderPipelineTypeChanged += OnPipelineChanged;
+#endif
 			EditorSceneManager.activeSceneChangedInEditMode -= OnActiveSceneChanged; 
 			EditorSceneManager.activeSceneChangedInEditMode += OnActiveSceneChanged; 
 #endif
@@ -164,7 +166,9 @@ namespace Hoshino17
 		void OnDestroy()
 		{
 #if UNITY_EDITOR
+#if UNITY_2021_OR_NEWER
 			RenderPipelineManager.activeRenderPipelineTypeChanged -= OnPipelineChanged;
+#endif
 			EditorSceneManager.activeSceneChangedInEditMode -= OnActiveSceneChanged;
 #endif
 			CleanupRenderCurrentScene();
