@@ -71,10 +71,10 @@ namespace Hoshino17
 			var pipelineType = RenderPipelineUtils.DetectPipeline();
 			Menu.SetChecked("Tools/Switch RenderPipeline/Builtin", pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline);
 #if USING_HDRP
-			Menu.SetChecked("Tools/Switch RenderPipeline/URP", pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline);
+			Menu.SetChecked("Tools/Switch RenderPipeline/HDRP", pipelineType == RenderPipelineUtils.PipelineType.HDPipeline);
 #endif
 #if USING_URP
-			Menu.SetChecked("Tools/Switch RenderPipeline/HDRP", pipelineType == RenderPipelineUtils.PipelineType.HDPipeline);
+			Menu.SetChecked("Tools/Switch RenderPipeline/URP", pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline);
 #endif
 		}
 
