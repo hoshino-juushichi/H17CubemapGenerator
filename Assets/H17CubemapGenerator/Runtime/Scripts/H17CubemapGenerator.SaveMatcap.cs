@@ -6,6 +6,9 @@ using UnityEditor;
 #endif
 using UnityEngine;
 using UnityEngine.Rendering;
+#if USING_HDRP
+using UnityEngine.Rendering.HighDefinition;
+#endif
 #if USING_URP
 using UnityEngine.Rendering.Universal;
 #endif
@@ -73,6 +76,8 @@ namespace Hoshino17
 				var desc = _generator.GetRenderTextureDescriptorForOutoutTemporary(_generator._textureWidth, _generator._textureWidth, true);
 				_tempRT = RenderTexture.GetTemporary(desc);
 
+				_generator._renderStartTime = DateTime.Now;
+
 				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline
 #if USING_HDRP 
 					|| _generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline
@@ -85,6 +90,7 @@ namespace Hoshino17
 				}
 				else
 				{
+					_generator._rendererCamera.targetTexture = _tempRT; // update rendererCamera trigger
 					_renderPipelineFook = new RenderPipelineFook(
 						onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
 					);
@@ -99,9 +105,7 @@ namespace Hoshino17
 				RenderTexture previous = RenderTexture.active;
 				RenderTexture.active = _tempRT;
 
-//				TextureFormat textureFormat = _generator._isOutputHDR ? TextureFormat.RGBAHalf : TextureFormat.RGB24;
 				var tempTex = _generator.CreateTexture2DForOutputTemporary(_tempRT.width, _tempRT.height);
-//				var tempTex = new Texture2D(_tempRT.width, _tempRT.height, textureFormat, mipCount: -1, linear: !_generator._isOutputSRGB);
 				tempTex.ReadPixels(new Rect(0, 0, _tempRT.width, _tempRT.height), 0, 0);
 				tempTex.Apply();
 
@@ -130,9 +134,8 @@ namespace Hoshino17
 			{
 				try
 				{
-					_generator._rendererCamera.targetTexture = _tempRT;
-					_generator._rendererCamera.Render();
-					_generator._rendererCamera.targetTexture = null;
+					var dummy = new ScriptableRenderContext();
+					RenderMatcap(dummy, _generator._rendererCamera);
 				}
 				finally
 				{
@@ -144,36 +147,48 @@ namespace Hoshino17
 
 			void OnBeginFrameRendering(ScriptableRenderContext context, Camera[] cameras)
 			{
+				if (_isDone)
+				{
+					return;
+				}
+
 				for (int i = 0; i < cameras.Length; i++)
 				{
 					if (_generator._rendererCamera == cameras[i])
 					{
-						OnRender(context, cameras[i]);
+						RenderMatcap(context, cameras[i]);
 						_isDone = true;
 						break;
+					}
+
+					var elapsed = DateTime.Now - _generator._renderStartTime;
+					if (elapsed > TimeSpan.FromMilliseconds(5000f))
+					{
+						_isDone = true;
+						throw new TimeoutException("Timeout");
 					}
 				}
 			}
 
-			void OnRender(ScriptableRenderContext context, Camera camera)
+			void RenderMatcap(ScriptableRenderContext context, Camera camera)
 			{
 				camera.targetTexture = _tempRT;
 
-#if USING_URP 
-				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
-				{
-					UniversalRenderPipeline.RenderSingleCamera(context, camera);
-				}
-				else
-#endif
 #if USING_HDRP
 				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 				{
 				}
 				else
 #endif
+#if USING_URP
+				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 				{
-					throw new InvalidOperationException("Unsupported");
+					UniversalRenderPipeline.RenderSingleCamera(context, camera);
+				}
+				else
+#endif
+				{
+					camera.Render();
 				}
 
 				camera.targetTexture = null;
