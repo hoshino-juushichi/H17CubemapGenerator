@@ -116,7 +116,7 @@ namespace Hoshino17
 				throw new InvalidOperationException($"{AssetPathCubemapGeneratorPrefab} not found");
 			}
 			var goGenerator = GameObject.Instantiate(prefab);
-//			goGenerator.hideFlags = HideFlags.HideAndDontSave;
+			goGenerator.hideFlags = HideFlags.HideAndDontSave;
 			this.generatorInstance = goGenerator.GetComponent<H17CubemapGenerator>();
 			this.generatorInstance.SetEditorDragControl(true);
 			this.generatorInstance.onPipelineChanged += () => StartRedraw();
