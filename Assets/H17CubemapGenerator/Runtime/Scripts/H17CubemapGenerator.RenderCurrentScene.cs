@@ -62,7 +62,7 @@ namespace Hoshino17
 				_onUpdate -= OnRenderCamera;
 				_onUpdate += OnRenderCamera;
 #else
-				_rendererCamera.targetTexture = _cubemapRT; // update rendererCamera
+				_rendererCamera.targetTexture = _cubemapRT; // update rendererCamera trigger
 				_renderPipelineFook = new RenderPipelineFook(
 					onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
 				);
