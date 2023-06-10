@@ -159,8 +159,10 @@ namespace Hoshino17
 			RenderPipelineManager.activeRenderPipelineTypeChanged += OnPipelineChanged;
 #endif
 			EditorSceneManager.activeSceneChangedInEditMode -= OnActiveSceneChanged; 
-			EditorSceneManager.activeSceneChangedInEditMode += OnActiveSceneChanged; 
+			EditorSceneManager.activeSceneChangedInEditMode += OnActiveSceneChanged;
 #endif
+			SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+			SceneManager.activeSceneChanged += OnActiveSceneChanged;
 		}
 
 		void OnDestroy()
@@ -171,6 +173,7 @@ namespace Hoshino17
 #endif
 			EditorSceneManager.activeSceneChangedInEditMode -= OnActiveSceneChanged;
 #endif
+			SceneManager.activeSceneChanged -= OnActiveSceneChanged;
 			CleanupRenderCurrentScene();
 			DisposeRenderCache();
 			DisposeMaterials();
