@@ -47,3 +47,5 @@ AdviceEachTextureFacesSameFormat,各面のテクスチャのフォーマット�
 TextureShape,テクスチャの形状
 TextureShape2D,2D
 TextureShapeCube,キューブ
+UsingCameraAngles,カメラの角度を使う
+HorizontalRotation,水平回転

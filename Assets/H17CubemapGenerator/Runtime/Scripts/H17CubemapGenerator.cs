@@ -18,6 +18,7 @@ namespace Hoshino17
 	{
 		bool isAvailableInspector6Sided { get; }
 		void SetPreviewObject(H17CubemapGenerator.PreviewObject previewObject);
+		void SetUsingCameraAngles(bool usingCameraAngles);
 		void SetSpecificCamera(Camera? specificCamera);
 		void SetCubemapWidth(int textureWidth);
 		void StartRender(H17CubemapGenerator.InputSource inputSource, Action? onCompleted = null);
@@ -101,6 +102,7 @@ namespace Hoshino17
 		bool _isRenderProcessing;
 		bool _isDone;
 		bool _isSourceHDR;
+		bool _usingCameraAngles;
 		bool _isOutputDesirableHDR;
 		bool _isOutputDesirableSRGB;
 		bool _isOutputDesirableCubemap;
@@ -115,6 +117,8 @@ namespace Hoshino17
 		readonly Texture2D[] _6sidedSources = new Texture2D[6];
 		Camera?	_specificCamera;
 		readonly List<Material> _previewMeshMaterials = new List<Material>();
+		Quaternion _rotationBase = Quaternion.identity;
+		float _horizontalRotation = 0f;
 
 		Matrix4x4 _previewRotationMatrix = Matrix4x4.identity;
 
@@ -339,6 +343,16 @@ namespace Hoshino17
 			}
 		}
 
+		public void SetHorizontalRotation(float horizontalRotation)
+		{
+			_horizontalRotation = horizontalRotation;
+		}
+
+		public void SetUsingCameraAngles(bool usingCameraAngles)
+		{
+			_usingCameraAngles = usingCameraAngles;
+		}
+
 		public void SetSpecificCamera(Camera? specificCamera)
 		{
 			_specificCamera = specificCamera;
@@ -486,8 +500,9 @@ namespace Hoshino17
 			_rendererCamera.gameObject.SetActive(true);
 
 			Camera? camera = _rendererCamera;
-
 			_isSourceHDR = camera.allowHDR;
+			_rotationBase = _usingCameraAngles ? targetSourceCamera.transform.rotation : Quaternion.identity;
+			_rotationBase = Quaternion.Euler(0f, _horizontalRotation, 0f) * _rotationBase;
 
 			var format = camera.allowHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.ARGB32;
 			var cubemapRTDesc = new RenderTextureDescriptor(cubemapWidth, cubemapWidth, format)

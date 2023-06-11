@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -58,6 +58,8 @@ namespace Hoshino17
 		TextureShape,
 		TextureShape2D,
 		TextureShapeCube,
+		UsingCameraAngles,
+		HorizontalRotation,
 	}
 
 	public class EasyLocalization

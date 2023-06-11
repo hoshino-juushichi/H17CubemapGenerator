@@ -175,7 +175,7 @@ namespace Hoshino17
 				default: throw new ArgumentException("face:" + face);
 			}
 
-			camera.transform.rotation = rot;
+			camera.transform.rotation = _rotationBase * rot;
 			camera.targetTexture = rt;
 			camera.ResetProjectionMatrix();
 			camera.projectionMatrix = new Matrix4x4(

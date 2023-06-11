@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 
 #nullable enable
+#pragma warning disable IDE1006 // naming rule
 
 namespace Hoshino17
 {
@@ -39,6 +40,8 @@ namespace Hoshino17
 			public const string LastAssetTextureBottom = "H17CubemapGenerator.LastAssetTextureBottom";
 			public const string LastAssetTextureFront = "H17CubemapGenerator.LastAssetTextureFront";
 			public const string LastAssetTextureBack = "H17CubemapGenerator.LastAssetTextureBack";
+			public const string UsingCameraAngles = "H17CubemapGenerator.UsingCameraAngles";
+			public const string HorizontalRotation = "H17CubemapGenerator.HorizontalRotation";
 		}
 
 		readonly EasyLocalization _localization = new EasyLocalization();
@@ -72,6 +75,10 @@ namespace Hoshino17
 		readonly PropertyAsset<Texture2D> _textureFrontProp = new PropertyAsset<Texture2D>(SettingsKeys.LastAssetTextureFront, null);
 		readonly PropertyAsset<Texture2D> _textureBackProp = new PropertyAsset<Texture2D>(SettingsKeys.LastAssetTextureBack, null);
 		readonly PropertyEnum<SystemLanguage> _languageProp;
+		readonly PropertyBool _usingCameraAnglesProp = new PropertyBool(SettingsKeys.UsingCameraAngles, false);
+		public enum RotationAngleType { _0, _45, _90, _135, _180, _225, _270, _315 }
+		readonly float[] _rotationAngleArray = new[] { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
+		readonly PropertyEnum<RotationAngleType> _horizontalRotationProp = new PropertyEnum<RotationAngleType>(SettingsKeys.HorizontalRotation, RotationAngleType._0);
 
 		public bool initialized => _initialized;
 		public string adviceMessage => _adviceMessage;
@@ -97,6 +104,8 @@ namespace Hoshino17
 		public Texture2D? textureBottom { get => _textureBottomProp.value; set => _textureBottomProp.value = value; }
 		public Texture2D? textureFront { get => _textureFrontProp.value; set => _textureFrontProp.value = value; }
 		public Texture2D? textureBack { get => _textureBackProp.value; set => _textureBackProp.value = value; }
+		public bool usingCameraAngles { get => _usingCameraAnglesProp.value; set => _usingCameraAnglesProp.value = value; }
+		public RotationAngleType horizontalRotation { get => _horizontalRotationProp.value; set => _horizontalRotationProp.value = value; }
 		public bool isSourceHDR { get => (this.generatorInstance != null) ? this.generatorInstance.isSourceHDR : false; }
 
 		public Action<SystemLanguage>? onLanguageChanged;
@@ -145,6 +154,8 @@ namespace Hoshino17
 			_textureBottomProp.onValueChanged += (value) => RequestRedraw();
 			_textureFrontProp.onValueChanged += (value) => RequestRedraw();
 			_textureBackProp.onValueChanged += (value) => RequestRedraw();
+			_usingCameraAnglesProp.onValueChanged += (value) => RequestRedraw();
+			_horizontalRotationProp.onValueChanged += (value) => RequestRedraw();
 
 			this.generatorInstance.SetPreviewObject(H17CubemapGenerator.PreviewObject.None);
 			RequestRedraw();
@@ -165,6 +176,11 @@ namespace Hoshino17
 
 		public void OnUpdate(float deltaTime)
 		{
+			if (this.generatorInstance == null || this.generatorInstance.isProcessing)
+			{
+				return;
+			}
+
 			if (_requestRedraw)
 			{
 				_requestRedraw = false;
@@ -200,6 +216,8 @@ namespace Hoshino17
 			switch (this.inputSource)
 			{
 				case H17CubemapGenerator.InputSource.CurrentScene:
+					this.generatorInstance.SetHorizontalRotation(_rotationAngleArray[(int)this.horizontalRotation]);
+					this.generatorInstance.SetUsingCameraAngles(this.usingCameraAngles);
 					this.generatorInstance.SetSpecificCamera(this.specificCamera);
 					this.generatorInstance.SetCubemapWidth(_textureWidthArray[(int)this.textureWidth]);
 					break;
@@ -285,6 +303,7 @@ namespace Hoshino17
 						_adviceMessage = GetText(TextId.AdviceSetCubemap);
 						return false;
 					}
+					// ok
 					break;
 
 				case H17CubemapGenerator.InputSource.SixSided:
@@ -324,10 +343,13 @@ namespace Hoshino17
 							}
 						}
 					}
-					return true;
+					// ok
+					break;
+
 				default:
 					break;
 			}
+			// ok
 			_adviceMessage = string.Empty;
 			return true;
 		}

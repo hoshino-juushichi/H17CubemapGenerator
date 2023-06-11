@@ -62,6 +62,17 @@
 				return output;
 			}
 
+            float3 RotateY(float3 vec, float angle)
+            {
+                float sinY = sin(angle);
+                float cosY = cos(angle);
+                float3x3 rotY = float3x3(
+                    float3(cosY, 0, -sinY),
+                    float3(0, 1, 0),
+                    float3(sinY, 0, cosY));
+				return mul(vec, rotY);
+            }
+
 			half4 frag(Varyings input) : SV_Target
 			{
 #if defined(SKYBOX_ON)
@@ -72,6 +83,10 @@
 				float3 viewDir = normalize(_WorldSpaceCameraPos - input.positionWS);
 				float3 reflectDir = reflect(-viewDir, input.normalWS);
 				reflectDir = mul(reflectDir, (float3x3)_PreviewRotationMatrix);
+
+				reflectDir = RotateY(reflectDir, PI); // rotate 180deg
+                reflectDir.x *= -1;
+
 				float4 color = SAMPLE_TEXTURECUBE( _MainTex, sampler_MainTex, reflectDir);
 				return color;
 #endif
