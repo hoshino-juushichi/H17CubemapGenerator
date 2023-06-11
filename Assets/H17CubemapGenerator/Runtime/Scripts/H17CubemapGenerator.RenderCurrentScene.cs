@@ -157,6 +157,7 @@ namespace Hoshino17
 				RenderTexture.active = prev;
 			}
 
+			camera.targetTexture = null; 
 			RenderTexture.ReleaseTemporary(tempRT2);
 			RenderTexture.ReleaseTemporary(tempRT);
 		}
