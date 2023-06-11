@@ -47,3 +47,5 @@ AdviceEachTextureFacesSameFormat,Make sure the format of the textures on each si
 TextureShape,TextureShape
 TextureShape2D,2D
 TextureShapeCube,Cube
+UsingCameraAngles,Using camera angles
+HorizontalRotation,Horizontal rotation

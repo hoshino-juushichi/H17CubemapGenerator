@@ -13,6 +13,7 @@ namespace Hoshino17
 		string[] _outputLayoutOptions = null!;
 		string[] _textureWidthOptions = null!;
 		string[] _textureShapeOptions = null!;
+		string[] _rotationAnglesOptions = null!;
 
 		void IH17CubemapGeneratorEditorTabView.Initialize(H17CubemapGeneratorEditorContext context, IH17CubemapGeneratorEditor editor)
 		{
@@ -51,6 +52,9 @@ namespace Hoshino17
 				_context.GetText(TextId.TextureShape2D),
 				_context.GetText(TextId.TextureShapeCube),
 			};
+
+			_rotationAnglesOptions = EnumUtils.StringListOfEnum<H17CubemapGeneratorEditorContext.RotationAngleType>().ToArray();
+			Replace(_rotationAnglesOptions, "_", string.Empty);
 		}
 
 		void IH17CubemapGeneratorEditorTabView.OnEnable() {}
@@ -85,13 +89,21 @@ namespace Hoshino17
 					{
 						_context.textureWidth = EnumUtils.EnumByIndex<H17CubemapGeneratorEditorContext.TextureWidthType>(textureWidthIndex);
 					}
-					_context.specificCamera = EditorGUILayout.ObjectField(_context.GetText(TextId.SpecificCamera), _context.specificCamera, typeof(Camera), false, GUILayout.Width(220)) as Camera;
+					_context.specificCamera = EditorGUILayout.ObjectField(_context.GetText(TextId.SpecificCamera), _context.specificCamera, typeof(Camera), true, GUILayout.Width(220)) as Camera;
+					_context.usingCameraAngles = EditorGUILayout.Toggle(_context.GetText(TextId.UsingCameraAngles), _context.usingCameraAngles, GUILayout.Width(220));
 
+					int anglesIndex = EnumUtils.IndexOfEnum(_context.horizontalRotation);
+					anglesIndex = EditorGUILayout.Popup(_context.GetText(TextId.HorizontalRotation), anglesIndex, _rotationAnglesOptions, GUILayout.Width(270));
+					if (EditorGUI.EndChangeCheck())
+					{
+						_context.horizontalRotation = EnumUtils.EnumByIndex<H17CubemapGeneratorEditorContext.RotationAngleType>(anglesIndex);
+					}
 					break;
 
 				case H17CubemapGenerator.InputSource.Cubemap:
 					_context.cubemap = EditorGUILayout.ObjectField(_context.GetText(TextId.InputCubemap), _context.cubemap, typeof(Cubemap), false, GUILayout.Width(220)) as Cubemap;
 					break;
+
 				case H17CubemapGenerator.InputSource.SixSided:
 					GUILayout.BeginHorizontal();
 					_context.textureLeft = EditorGUILayout.ObjectField(_context.GetText(TextId.InputLeft), _context.textureLeft, typeof(Texture2D), false, GUILayout.Width(220)) as Texture2D;
