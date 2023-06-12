@@ -1,3 +1,4 @@
+//#define ENABLE_URP_MULTI_QUALITY
 using UnityEngine;
 #if USING_HDRP
 using UnityEngine.Rendering.HighDefinition;
@@ -17,7 +18,13 @@ namespace Hoshino17
 		public HDRenderPipelineAsset? hdrpAsset;
 #endif
 #if USING_URP
+#if !ENABLE_URP_MULTI_QUALITY
 		public UniversalRenderPipelineAsset? urpAsset;
+#else
+		public UniversalRenderPipelineAsset? urpAssetBalanced;
+		public UniversalRenderPipelineAsset? urpAssetHighFidelity;
+		public UniversalRenderPipelineAsset? urpAssetPerformant;
+#endif
 #endif
 	}
 }
