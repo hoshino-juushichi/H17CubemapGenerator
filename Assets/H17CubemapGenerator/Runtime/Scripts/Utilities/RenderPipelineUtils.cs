@@ -20,9 +20,19 @@ namespace Hoshino17
 		public static PipelineType DetectPipeline()
 		{
 #if UNITY_2019_1_OR_NEWER
-			if (GraphicsSettings.renderPipelineAsset != null)
+#if UNITY_2022_3_OR_NEWER
+			var rpAsset = GraphicsSettings.defaultRenderPipeline;
+#else
+			var rpAsset = GraphicsSettings.renderPipelineAsset;
+#endif
+			if (rpAsset == null ) 
 			{
-				var srpType = GraphicsSettings.renderPipelineAsset.GetType().ToString();
+				rpAsset = QualitySettings.renderPipeline;
+			}
+
+			if (rpAsset != null)
+			{
+				var srpType = rpAsset.GetType().ToString();
 #if USING_HDRP 
 				if (srpType.Contains("HDRenderPipelineAsset"))
 				{
