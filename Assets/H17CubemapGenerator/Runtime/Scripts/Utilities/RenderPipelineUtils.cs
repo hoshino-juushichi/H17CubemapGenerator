@@ -16,20 +16,24 @@ namespace Hoshino17
 			HDPipeline
 #endif
 		}
- 
-		public static PipelineType DetectPipeline()
+
+		public static RenderPipelineAsset? GetCurrentRenderPipelineAsset()
 		{
+			if (QualitySettings.renderPipeline != null)
+			{
+				return QualitySettings.renderPipeline;
+			}
 #if UNITY_2019_1_OR_NEWER
 #if UNITY_2022_3_OR_NEWER
-			var rpAsset = GraphicsSettings.defaultRenderPipeline;
+			return GraphicsSettings.defaultRenderPipeline;
 #else
-			var rpAsset = GraphicsSettings.renderPipelineAsset;
+			return GraphicsSettings.renderPipelineAsset;
 #endif
-			if (rpAsset == null ) 
-			{
-				rpAsset = QualitySettings.renderPipeline;
-			}
+		}
 
+		public static PipelineType DetectPipeline()
+		{
+			var rpAsset = GetCurrentRenderPipelineAsset();
 			if (rpAsset != null)
 			{
 				var srpType = rpAsset.GetType().ToString();
