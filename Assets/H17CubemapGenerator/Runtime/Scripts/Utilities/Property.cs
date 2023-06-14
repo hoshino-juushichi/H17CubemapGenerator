@@ -97,8 +97,17 @@ namespace Hoshino17
 	{
 		public PropertyAsset(string? prefsKey, T? def = default(T))
 			: base(prefsKey, def,
-			onLoadValue: (prefsKey_, def_) => (T)AssetDatabase.LoadAssetAtPath<T>(PropertyKeyValue.LoadString(prefsKey_, string.Empty)),
-			onSaveValue: (prefsKey_, value_) => {
+			onLoadValue: (prefsKey_, def_) =>
+			{
+#if UNITY_EDITOR
+				return (T)AssetDatabase.LoadAssetAtPath<T>(PropertyKeyValue.LoadString(prefsKey_, string.Empty));
+#else
+				return default(T);
+#endif
+
+			},
+			onSaveValue: (prefsKey_, value_) =>
+			{
 				string str = string.Empty;
 #if UNITY_EDITOR
 				if (value_ != null) { str = AssetDatabase.GetAssetPath(value_); }

@@ -110,22 +110,6 @@ namespace Hoshino17
 			yield break;
 		}
 
-		RenderTextureDescriptor GetRenderTextureDescriptorForOutoutTemporary(int width, int height, bool depth)
-		{
-			var format = _rendererCamera.allowHDR ? RenderTextureFormat.DefaultHDR : RenderTextureFormat.ARGB32;
-			var desc = new RenderTextureDescriptor(width, height, format, depth ? 32 : 0);
-			desc.sRGB = _isOutputSRGB;
-			desc.enableRandomWrite = true;
-			return desc;
-		}
-
-		Texture2D CreateTexture2DForOutputTemporary(int width, int height)
-		{
-			TextureFormat textureFormat = _isOutputHDR ? TextureFormat.RGBAHalf : TextureFormat.RGB24;
-			Texture2D tex = new Texture2D(width, height, textureFormat, mipCount: -1, linear: !_isOutputSRGB);
-			return tex;
-		}
-
 		static void SetOutputSpecification(string assetPath, TextureImporterShape shape, bool generateMip, bool sRGB)
 		{
 			var textureImporter = AssetImporter.GetAtPath(assetPath) as TextureImporter;
