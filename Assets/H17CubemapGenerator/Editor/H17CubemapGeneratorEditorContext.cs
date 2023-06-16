@@ -167,6 +167,7 @@ namespace Hoshino17
 		public void Dispose()
 		{
 			this.previewScene?.Dispose();
+			this.previewScene = null!;
 			if (this.generatorInstance != null)
 			{
 				GameObject.DestroyImmediate(this.generatorInstance);

@@ -114,7 +114,7 @@ namespace Hoshino17
 		bool _fillMatcapOutsideByEdgeColor;
 		bool _isPipelingChanging;
 		bool _activeSceneChanged;
-		readonly Texture2D[] _6sidedSources = new Texture2D[6];
+		readonly Texture2D?[] _6sidedSources = new Texture2D[6];
 		Camera?	_specificCamera;
 		readonly List<Material> _previewMeshMaterials = new List<Material>();
 		Quaternion _rotationBase = Quaternion.identity;
@@ -133,7 +133,6 @@ namespace Hoshino17
 
 		bool _started;
 		Action? _onStartExit;
-
 		Action? _onUpdate;
 
 		public bool isSourceHDR => _isSourceHDR;
@@ -181,7 +180,15 @@ namespace Hoshino17
 			CleanupRenderCurrentScene();
 			DisposeRenderCache();
 			DisposeMaterials();
+			_specificCamera = null;
+			for (int i = 0; i < _6sidedSources.Length; i++)
+			{
+				_6sidedSources[i] = null;
+			}
+			_onStartExit = null;
+			_onUpdate = null;
 		}
+
 		void Update()
 		{
 			if (_isPipelingChanging)
@@ -339,6 +346,7 @@ namespace Hoshino17
 				if (_cachedFaces[i] != null)
 				{
 					DestroyImmediate(_cachedFaces[i]);
+					_cachedFaces[i] = null;
 				}
 			}
 		}

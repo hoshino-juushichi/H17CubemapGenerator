@@ -33,7 +33,11 @@ namespace Hoshino17
 
 		void IH17CubemapGeneratorEditorTabView.OnEnable() {}
 		void IH17CubemapGeneratorEditorTabView.OnDisable() {}
-		void IH17CubemapGeneratorEditorTabView.OnDestroy() {}
+		void IH17CubemapGeneratorEditorTabView.OnDestroy()
+		{
+			_context = null!;
+			_editor = null!;
+		}
 
 		void ICubemapGeneratorPreviewSceneRenderer.OnGUIFirst()
 		{
