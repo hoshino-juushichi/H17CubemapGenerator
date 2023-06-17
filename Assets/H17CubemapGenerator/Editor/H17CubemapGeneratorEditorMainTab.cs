@@ -59,7 +59,15 @@ namespace Hoshino17
 
 		void IH17CubemapGeneratorEditorTabView.OnEnable() {}
 		void IH17CubemapGeneratorEditorTabView.OnDisable() {}
-		void IH17CubemapGeneratorEditorTabView.OnDestroy() {}
+		void IH17CubemapGeneratorEditorTabView.OnDestroy()
+		{
+			_context = null!;
+			_inputSourceOptions = null!;
+			_outputLayoutOptions = null!;
+			_textureWidthOptions = null!;
+			_textureShapeOptions = null!;
+			_rotationAnglesOptions = null!;
+		}
 
 		void IH17CubemapGeneratorEditorTabView.OnGUI()
 		{

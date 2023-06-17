@@ -88,7 +88,9 @@ namespace Hoshino17
 		void OnDestroy()
 		{
 			foreach (var tab in _tabViewList) { tab.OnDestroy(); }
+			_tabViewList.Clear();
 			_context?.Dispose();
+			_context = null!;
 		}
 
 		void OnGUI()
