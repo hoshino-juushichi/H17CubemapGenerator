@@ -93,6 +93,7 @@ namespace Hoshino17
 			Matcap,
 		}
 
+		public const bool ExposureOverrideEnabledDefault = true;
 		public const float FixedExposureStandard = 12f;
 
 		RenderPipelineUtils.PipelineType _pipelineType = RenderPipelineUtils.PipelineType.Unsupported;
@@ -122,7 +123,7 @@ namespace Hoshino17
 		readonly List<Material> _previewMeshMaterials = new List<Material>();
 		Quaternion _rotationBase = Quaternion.identity;
 		float _horizontalRotation = 0f;
-		bool _exposureOverride;
+		bool _exposureOverride = ExposureOverrideEnabledDefault;
 		float _fixedExposure = FixedExposureStandard;
 		float _compensation = 0f;
 

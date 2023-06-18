@@ -84,7 +84,7 @@ namespace Hoshino17
 		public enum RotationAngleType { _0, _45, _90, _135, _180, _225, _270, _315 }
 		readonly float[] _rotationAngleArray = new[] { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
 		readonly PropertyEnum<RotationAngleType> _horizontalRotationProp = new PropertyEnum<RotationAngleType>(SettingsKeys.HorizontalRotation, RotationAngleType._0);
-		readonly PropertyBool _exposureOverrideProp = new PropertyBool(SettingsKeys.ExposureOverride, true);
+		readonly PropertyBool _exposureOverrideProp = new PropertyBool(SettingsKeys.ExposureOverride, H17CubemapGenerator.ExposureOverrideEnabledDefault);
 		readonly PropertyFloat _fixedExposureProp = new PropertyFloat(SettingsKeys.FixedExposure, H17CubemapGenerator.FixedExposureStandard);
 		readonly PropertyFloat _compensationProp = new PropertyFloat(SettingsKeys.Compensation, 0f);
 
