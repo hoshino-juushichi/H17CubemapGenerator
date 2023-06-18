@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 #nullable enable
 #pragma warning disable IDE1006 // naming rule
@@ -225,10 +227,12 @@ namespace Hoshino17
 				ClearCubemap();
 				return;
 			}
+#if USING_HDRP
 			if (this.pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 			{
 				this.generatorInstance.SetExposureOverride(this.exposureOverride, this.fixedExposure, this.compensation);
 			}
+#endif
 
 			switch (this.inputSource)
 			{
