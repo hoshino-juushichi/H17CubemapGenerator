@@ -128,6 +128,7 @@ namespace Hoshino17
 					break;
 			}
 
+#if USING_HDRP
 			if (_context.pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 			{
 				_context.exposureOverride = EditorGUILayout.Toggle(_context.GetText(TextId.ExposureOverride), _context.exposureOverride, GUILayout.Width(220));
@@ -136,6 +137,7 @@ namespace Hoshino17
 				_context.compensation = EditorGUILayout.FloatField(_context.GetText(TextId.Compensation), _context.compensation, GUILayout.Width(220));
 				EditorGUI.EndDisabledGroup();
 			}
+#endif
 
 			EditorGUI.BeginDisabledGroup(!_context.CanRender());
 			if (GUILayout.Button(_context.GetText(TextId.Redraw), GUILayout.Width(120)))
