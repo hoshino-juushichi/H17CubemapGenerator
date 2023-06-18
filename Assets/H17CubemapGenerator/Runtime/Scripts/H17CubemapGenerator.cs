@@ -27,6 +27,7 @@ namespace Hoshino17
 		void ResetPreviewCubeRotation();
 		public void ClearCubemap();
 		void ClearDragging();
+		void SetExposureOverride(bool exposureOverride, float fixedExposure, float compensation);
 
 #if UNITY_EDITOR
 		GameObject previewSphere { get; }
@@ -92,6 +93,8 @@ namespace Hoshino17
 			Matcap,
 		}
 
+		public const float FixedExposureStandard = 12f;
+
 		RenderPipelineUtils.PipelineType _pipelineType = RenderPipelineUtils.PipelineType.Unsupported;
 		Shader? _shaderBlitter = null!;
 		Shader? _shaderPreview = null!;
@@ -119,6 +122,9 @@ namespace Hoshino17
 		readonly List<Material> _previewMeshMaterials = new List<Material>();
 		Quaternion _rotationBase = Quaternion.identity;
 		float _horizontalRotation = 0f;
+		bool _exposureOverride;
+		float _fixedExposure = FixedExposureStandard;
+		float _compensation = 0f;
 
 		Matrix4x4 _previewRotationMatrix = Matrix4x4.identity;
 
@@ -170,6 +176,9 @@ namespace Hoshino17
 
 		void OnDestroy()
 		{
+#if USING_HDRP
+			CleanupExposureOverride();
+#endif
 #if UNITY_EDITOR
 #if UNITY_2021_1_OR_NEWER
 			RenderPipelineManager.activeRenderPipelineTypeChanged -= OnPipelineChanged;
@@ -372,6 +381,14 @@ namespace Hoshino17
 			_textureWidth = width;
 		}
 
+		public void SetExposureOverride(bool exposureOverride, float fixelExposure, float compensatipn)
+		{
+			if (this.isProcessing) { throw new InvalidOperationException("Now processing"); }
+			_exposureOverride = exposureOverride;
+			_fixedExposure = fixelExposure;
+			_compensation = compensatipn;
+		}
+
 #if UNITY_EDITOR
 		public void SetFillMatcapOutsideByEdgeColor(bool value)
 		{
@@ -502,7 +519,6 @@ namespace Hoshino17
 			}
 #endif
 
-			// For URP
 			var targetSourceCamera = GetTargetCamera();
 			_rendererCamera.CopyFrom(targetSourceCamera);
 			_rendererCamera.gameObject.SetActive(true);
@@ -521,6 +537,13 @@ namespace Hoshino17
 			_cubemapRT = new RenderTexture(cubemapRTDesc);
 			UpdatePreviewMeshTexture(null);
 
+#if USING_HDRP
+			if (_exposureOverride && (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline))
+			{
+				StartExposureOverride(_fixedExposure, _compensation);
+			}
+#endif
+
 			_isDone = false;
 			UpdatePreviewObjectVisivility(InternalPreviewObjectMode.HideAll);
 
@@ -537,6 +560,10 @@ namespace Hoshino17
 			yield return new WaitUntil(() => _isDone);
 
 			UpdatePreviewMeshTexture(_cubemapRT);
+#if USING_HDRP
+			CleanupExposureOverride();
+#endif
+
 			_isRenderProcessing = false;
 			onCompleted?.Invoke();
 			UpdatePreviewObjectVisivility(InternalPreviewObjectMode.Default);

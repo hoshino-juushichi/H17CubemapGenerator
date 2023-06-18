@@ -49,3 +49,6 @@ TextureShape2D,2D
 TextureShapeCube,Cube
 UsingCameraAngles,Using camera angles
 HorizontalRotation,Horizontal rotation
+ExposureOverride,exposure Override
+FixedExposure,FixedExposure
+Compensation,Compensation

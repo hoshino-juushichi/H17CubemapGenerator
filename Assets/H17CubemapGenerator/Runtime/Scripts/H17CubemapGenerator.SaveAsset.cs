@@ -20,6 +20,23 @@ namespace Hoshino17
 			public IEnumerator SaveAsPNGCoroutine(string assetPath);
 		}
 
+		abstract class CubemapSaveBase : ICubemapSave
+		{
+			protected H17CubemapGenerator generator { get; private set; }
+
+			protected CubemapSaveBase(H17CubemapGenerator generator)
+			{
+				this.generator = generator;
+			}
+
+			public abstract IEnumerator SaveAsPNGCoroutine(string assetPath);
+
+			public virtual void Dispose()
+			{
+				this.generator = null!;
+   			}
+		}
+
 		public void SaveAsset(string assetPath, Action<string>? onCompleted = null)
 		{
 			_isOutputHDR = _isSourceHDR && _isOutputDesirableHDR;

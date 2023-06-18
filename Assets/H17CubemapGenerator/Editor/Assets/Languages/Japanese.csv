@@ -49,3 +49,6 @@ TextureShape2D,2D
 TextureShapeCube,キューブ
 UsingCameraAngles,カメラの角度を使う
 HorizontalRotation,水平回転
+ExposureOverride,露光オーバーライド
+FixedExposure,固定露光
+Compensation,補償

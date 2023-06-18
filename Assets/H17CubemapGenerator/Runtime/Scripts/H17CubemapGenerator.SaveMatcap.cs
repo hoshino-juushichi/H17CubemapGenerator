@@ -26,20 +26,19 @@ namespace Hoshino17
 
 #if UNITY_EDITOR
 
-		class SaveAsMatcap : ICubemapSave
+		class SaveAsMatcap : CubemapSaveBase
 		{
-			H17CubemapGenerator _generator;
 			RenderTexture? _tempRT;
 			RenderPipelineFook? _renderPipelineFook;
 			bool _isDone;
 
 			public SaveAsMatcap(H17CubemapGenerator generator)
+				: base(generator)
 			{
-				_generator = generator;
-				_generator.UpdatePreviewObjectVisivility(InternalPreviewObjectMode.Matcap);
+				this.generator.UpdatePreviewObjectVisivility(InternalPreviewObjectMode.Matcap);
 			}
 
-			public void Dispose()
+			public override void Dispose()
 			{
 				if (_tempRT != null)
 				{
@@ -48,56 +47,68 @@ namespace Hoshino17
 				}
 				_renderPipelineFook?.Dispose();
 				_renderPipelineFook = null;
-				_generator._rendererCamera.gameObject.SetActive(false);
-				_generator.UpdatePreviewObjectVisivility(InternalPreviewObjectMode.Default);
+				generator._rendererCamera.gameObject.SetActive(false);
+				generator.UpdatePreviewObjectVisivility(InternalPreviewObjectMode.Default);
+				base.Dispose();
 			}
 
-			public IEnumerator SaveAsPNGCoroutine(string assetPath)
+			public override IEnumerator SaveAsPNGCoroutine(string assetPath)
 			{
 				const int LayerNo_CubemapGeneratorMatcap = 31;
 
-				var targetSourceCamera = _generator.GetTargetCamera();
-				_generator._rendererCamera.CopyFrom(targetSourceCamera);
-				_generator._rendererCamera.gameObject.SetActive(true);
+				var targetSourceCamera = generator.GetTargetCamera();
+				generator._rendererCamera.CopyFrom(targetSourceCamera);
+				generator._rendererCamera.gameObject.SetActive(true);
 
 				const float Adjust = 1.010f;
 				float distance = 1f / Mathf.Atan(Adjust * targetSourceCamera.fieldOfView * 0.5f * Mathf.Deg2Rad);
 
 				var position = targetSourceCamera.transform.position + -targetSourceCamera.transform.forward * distance;
-				_generator._rendererCamera.transform.position = position;
-				_generator._rendererCamera.orthographic = false;
-				_generator._rendererCamera.usePhysicalProperties = false;
-				_generator._rendererCamera.clearFlags = CameraClearFlags.SolidColor;
-				_generator._rendererCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
-				_generator._rendererCamera.cullingMask = (1 << LayerNo_CubemapGeneratorMatcap);
-				_generator._previewSphereMatcap.transform.position = targetSourceCamera.transform.position;
-				_generator._previewSphereMatcap.layer = LayerNo_CubemapGeneratorMatcap;
+				generator._rendererCamera.transform.position = position;
+				generator._rendererCamera.orthographic = false;
+				generator._rendererCamera.usePhysicalProperties = false;
+				generator._rendererCamera.clearFlags = CameraClearFlags.SolidColor;
+				generator._rendererCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+				generator._rendererCamera.cullingMask = (1 << LayerNo_CubemapGeneratorMatcap);
+				generator._previewSphereMatcap.transform.position = targetSourceCamera.transform.position;
+				generator._previewSphereMatcap.layer = LayerNo_CubemapGeneratorMatcap;
 
-				var desc = _generator.GetRenderTextureDescriptorForOutoutTemporary(_generator._textureWidth, _generator._textureWidth, true);
+				var desc = generator.GetRenderTextureDescriptorForOutoutTemporary(generator._textureWidth, generator._textureWidth, true);
 				_tempRT = RenderTexture.GetTemporary(desc);
 
-				_generator._renderStartTime = DateTime.Now;
+				generator._renderStartTime = DateTime.Now;
 
-				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline
+#if USING_HDRP
+				if (generator._exposureOverride && (generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline))
+				{
+					generator.StartExposureOverride(generator._fixedExposure, generator._compensation);
+				}
+#endif
+
+				if (generator._pipelineType == RenderPipelineUtils.PipelineType.BuiltInPipeline
 #if USING_HDRP 
-					|| _generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline
+					|| generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline
 #endif
 					)
 				{
-					_generator._onUpdate -= OnRenderCamera;
-					_generator._onUpdate += OnRenderCamera;
+					generator._onUpdate -= OnRenderCamera;
+					generator._onUpdate += OnRenderCamera;
 
 				}
 				else
 				{
-					_generator._rendererCamera.targetTexture = _tempRT; // update rendererCamera trigger
+					generator._rendererCamera.targetTexture = _tempRT; // update rendererCamera trigger
 					_renderPipelineFook = new RenderPipelineFook(
 						onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
 					);
 				}
 				yield return new WaitUntil(() => _isDone);
 
-				if (_generator._fillMatcapOutsideByEdgeColor)
+#if USING_HDRP
+				generator.CleanupExposureOverride();
+#endif
+
+				if (generator._fillMatcapOutsideByEdgeColor)
 				{
 					RunComputeMatcapFillOutsideByEdgeColor(desc);
 				}
@@ -105,7 +116,7 @@ namespace Hoshino17
 				RenderTexture previous = RenderTexture.active;
 				RenderTexture.active = _tempRT;
 
-				var tempTex = _generator.CreateTexture2DForOutputTemporary(_tempRT.width, _tempRT.height);
+				var tempTex = generator.CreateTexture2DForOutputTemporary(_tempRT.width, _tempRT.height);
 				tempTex.ReadPixels(new Rect(0, 0, _tempRT.width, _tempRT.height), 0, 0);
 				tempTex.Apply();
 
@@ -123,8 +134,8 @@ namespace Hoshino17
 				AssetDatabase.ImportAsset(assetPath);
 				H17CubemapGenerator.SetOutputSpecification(assetPath,
 					TextureImporterShape.Texture2D,
-					_generator._isOutputGenerateMipmap,
-					_generator._isOutputSRGB);
+					generator._isOutputGenerateMipmap,
+					generator._isOutputSRGB);
 				AssetDatabase.Refresh();
 
 				yield break;
@@ -135,13 +146,13 @@ namespace Hoshino17
 				try
 				{
 					var dummy = new ScriptableRenderContext();
-					RenderMatcap(dummy, _generator._rendererCamera);
+					RenderMatcap(dummy, generator._rendererCamera);
 				}
 				finally
 				{
 					_isDone = true;
-					_generator._rendererCamera.gameObject.SetActive(false);
-					_generator._onUpdate -= OnRenderCamera;
+					generator._rendererCamera.gameObject.SetActive(false);
+					generator._onUpdate -= OnRenderCamera;
 				}
 			}
 
@@ -154,14 +165,14 @@ namespace Hoshino17
 
 				for (int i = 0; i < cameras.Length; i++)
 				{
-					if (_generator._rendererCamera == cameras[i])
+					if (generator._rendererCamera == cameras[i])
 					{
 						RenderMatcap(context, cameras[i]);
 						_isDone = true;
 						break;
 					}
 
-					var elapsed = DateTime.Now - _generator._renderStartTime;
+					var elapsed = DateTime.Now - generator._renderStartTime;
 					if (elapsed > TimeSpan.FromMilliseconds(5000f))
 					{
 						_isDone = true;
@@ -175,13 +186,13 @@ namespace Hoshino17
 				camera.targetTexture = _tempRT;
 
 #if USING_HDRP
-				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+				if (generator._pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
 				{
 				}
 				else
 #endif
 #if USING_URP
-				if (_generator._pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
+				if (generator._pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 				{
 					UniversalRenderPipeline.RenderSingleCamera(context, camera);
 				}
@@ -202,12 +213,12 @@ namespace Hoshino17
 				Graphics.CopyTexture(_tempRT, tempRT2);
 
 				int width = _tempRT.width;
-				int kernelIndex = _generator._computeShader.FindKernel("MatcapFillOutsideByEdgeColor");
-				_generator._computeShader.SetTexture(kernelIndex, "source", tempRT2);
-				_generator._computeShader.SetTexture(kernelIndex, "result", _tempRT);
-				_generator._computeShader.SetInt("width", width);
-				_generator._computeShader.GetKernelThreadGroupSizes(kernelIndex, out var threadSizeX, out var threadSizeY, out var threadSizeZ);
-				_generator._computeShader.Dispatch(kernelIndex, width / (int)threadSizeX, width / (int)threadSizeY, (int)threadSizeZ);
+				int kernelIndex = generator._computeShader.FindKernel("MatcapFillOutsideByEdgeColor");
+				generator._computeShader.SetTexture(kernelIndex, "source", tempRT2);
+				generator._computeShader.SetTexture(kernelIndex, "result", _tempRT);
+				generator._computeShader.SetInt("width", width);
+				generator._computeShader.GetKernelThreadGroupSizes(kernelIndex, out var threadSizeX, out var threadSizeY, out var threadSizeZ);
+				generator._computeShader.Dispatch(kernelIndex, width / (int)threadSizeX, width / (int)threadSizeY, (int)threadSizeZ);
 
 				RenderTexture.ReleaseTemporary(tempRT2);
 			}

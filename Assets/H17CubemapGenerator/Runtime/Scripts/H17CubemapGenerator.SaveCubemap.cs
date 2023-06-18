@@ -14,27 +14,18 @@ namespace Hoshino17
 	public partial class H17CubemapGenerator : MonoBehaviour, IH17CubemapGenerator
 	{
 #if UNITY_EDITOR
-		class SaveAsCubemap : ICubemapSave
+		class SaveAsCubemap : CubemapSaveBase
 		{
-			H17CubemapGenerator _generator;
+			public SaveAsCubemap(H17CubemapGenerator generator) : base(generator) { }
 
-			public SaveAsCubemap(H17CubemapGenerator generator)
+			public override IEnumerator SaveAsPNGCoroutine(string assetPath)
 			{
-				_generator = generator;
-			}
-
-			public void Dispose()
-			{
-			}
-
-			public IEnumerator SaveAsPNGCoroutine(string assetPath)
-			{
-				int texWidth = _generator._cachedFaces[0]!.width;
+				int texWidth = generator._cachedFaces[0]!.width;
 				var blockSize = new Vector2Int(texWidth, texWidth);
 				var tmpSize = blockSize;
 				var destPos = new Vector2Int[6];
 
-				switch (_generator._outputLayout)
+				switch (generator._outputLayout)
 				{
 					case OutputLayout.CrossHorizontal:
 						tmpSize.x *= 4;
@@ -74,12 +65,12 @@ namespace Hoshino17
 						throw new InvalidOperationException("Unsupported OutputLayout type");
 				}
 
-				Texture2D tempTex = _generator.CreateTexture2DForOutputTemporary(tmpSize.x, tmpSize.y);
+				Texture2D tempTex = generator.CreateTexture2DForOutputTemporary(tmpSize.x, tmpSize.y);
 				TextureUtils.FillTexture2D(tempTex, Color.black);
 
 				for (int i = 0; i < 6; i++)
 				{
-					tempTex.SetPixels(destPos[i].x * blockSize.x, destPos[i].y * blockSize.y, blockSize.x, blockSize.y, _generator._cachedFaces[i]!.GetPixels(), 0);
+					tempTex.SetPixels(destPos[i].x * blockSize.x, destPos[i].y * blockSize.y, blockSize.x, blockSize.y, generator._cachedFaces[i]!.GetPixels(), 0);
 				}
 				tempTex.Apply();
 
@@ -87,9 +78,9 @@ namespace Hoshino17
 				File.WriteAllBytes(assetPath, bytes);
 				AssetDatabase.ImportAsset(assetPath);
 				H17CubemapGenerator.SetOutputSpecification(assetPath,
-					(_generator._isOutputCubemap ? TextureImporterShape.TextureCube : TextureImporterShape.Texture2D),
-					_generator._isOutputGenerateMipmap,
-					_generator._isOutputSRGB);
+					(generator._isOutputCubemap ? TextureImporterShape.TextureCube : TextureImporterShape.Texture2D),
+					generator._isOutputGenerateMipmap,
+					generator._isOutputSRGB);
 				AssetDatabase.Refresh();
 
 				yield break;

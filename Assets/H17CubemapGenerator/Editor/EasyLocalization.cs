@@ -60,6 +60,9 @@ namespace Hoshino17
 		TextureShapeCube,
 		UsingCameraAngles,
 		HorizontalRotation,
+		ExposureOverride,
+		FixedExposure,
+		Compensation,
 	}
 
 	public class EasyLocalization

@@ -42,6 +42,9 @@ namespace Hoshino17
 			public const string LastAssetTextureBack = "H17CubemapGenerator.LastAssetTextureBack";
 			public const string UsingCameraAngles = "H17CubemapGenerator.UsingCameraAngles";
 			public const string HorizontalRotation = "H17CubemapGenerator.HorizontalRotation";
+			public const string ExposureOverride = "H17CubemapGenerator.ExposureOverride";
+			public const string FixedExposure = "H17CubemapGenerator.FixedExposure";
+			public const string Compensation = "H17CubemapGenerator.Compensation";
 		}
 
 		readonly EasyLocalization _localization = new EasyLocalization();
@@ -79,6 +82,9 @@ namespace Hoshino17
 		public enum RotationAngleType { _0, _45, _90, _135, _180, _225, _270, _315 }
 		readonly float[] _rotationAngleArray = new[] { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
 		readonly PropertyEnum<RotationAngleType> _horizontalRotationProp = new PropertyEnum<RotationAngleType>(SettingsKeys.HorizontalRotation, RotationAngleType._0);
+		readonly PropertyBool _exposureOverrideProp = new PropertyBool(SettingsKeys.ExposureOverride, true);
+		readonly PropertyFloat _fixedExposureProp = new PropertyFloat(SettingsKeys.FixedExposure, H17CubemapGenerator.FixedExposureStandard);
+		readonly PropertyFloat _compensationProp = new PropertyFloat(SettingsKeys.Compensation, 0f);
 
 		public bool initialized => _initialized;
 		public string adviceMessage => _adviceMessage;
@@ -107,6 +113,9 @@ namespace Hoshino17
 		public bool usingCameraAngles { get => _usingCameraAnglesProp.value; set => _usingCameraAnglesProp.value = value; }
 		public RotationAngleType horizontalRotation { get => _horizontalRotationProp.value; set => _horizontalRotationProp.value = value; }
 		public bool isSourceHDR { get => (this.generatorInstance != null) ? this.generatorInstance.isSourceHDR : false; }
+		public bool exposureOverride { get => _exposureOverrideProp.value; set => _exposureOverrideProp.value = value; }
+		public float fixedExposure { get => _fixedExposureProp.value; set => _fixedExposureProp.value = value; }
+		public float compensation { get => _compensationProp.value; set => _compensationProp.value = value; }
 
 		public Action<SystemLanguage>? onLanguageChanged;
 		public IReadOnlyList<SystemLanguage> supportedLanguages => _localization.supportedLanguages;
@@ -156,6 +165,9 @@ namespace Hoshino17
 			_textureBackProp.onValueChanged += (value) => RequestRedraw();
 			_usingCameraAnglesProp.onValueChanged += (value) => RequestRedraw();
 			_horizontalRotationProp.onValueChanged += (value) => RequestRedraw();
+			_exposureOverrideProp.onValueChanged += (value) => RequestRedraw();
+			_fixedExposureProp.onValueChanged += (value) => RequestRedraw();
+			_compensationProp.onValueChanged += (value) => RequestRedraw();
 
 			this.generatorInstance.SetPreviewObject(H17CubemapGenerator.PreviewObject.None);
 			RequestRedraw();
@@ -212,6 +224,10 @@ namespace Hoshino17
 			{
 				ClearCubemap();
 				return;
+			}
+			if (this.pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+			{
+				this.generatorInstance.SetExposureOverride(this.exposureOverride, this.fixedExposure, this.compensation);
 			}
 
 			switch (this.inputSource)

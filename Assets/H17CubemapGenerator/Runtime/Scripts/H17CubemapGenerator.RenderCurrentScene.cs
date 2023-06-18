@@ -41,20 +41,20 @@ namespace Hoshino17
 		{
 			_renderStartTime = DateTime.Now;
 
-/*
- * #if UNITY_2023_1_OR_NEWER && USING_HDRP
-			if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
-			{
-				//_rendererCamera.targetTexture = _cubemapRT; // update rendererCamera
-				//_renderPipelineFook = new RenderPipelineFook(
-				//	onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
-				//);
-				_onUpdate -= OnRenderCamera;
-				_onUpdate += OnRenderCamera;
-			}
-			else
-#endif
-*/
+			/*
+			 * #if UNITY_2023_1_OR_NEWER && USING_HDRP
+						if (_pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+						{
+							//_rendererCamera.targetTexture = _cubemapRT; // update rendererCamera
+							//_renderPipelineFook = new RenderPipelineFook(
+							//	onBeginFrameRendering: (context, cameras) => OnBeginFrameRendering(context, cameras)
+							//);
+							_onUpdate -= OnRenderCamera;
+							_onUpdate += OnRenderCamera;
+						}
+						else
+			#endif
+			*/
 #if USING_URP
 			if (_pipelineType == RenderPipelineUtils.PipelineType.UniversalPipeline)
 			{

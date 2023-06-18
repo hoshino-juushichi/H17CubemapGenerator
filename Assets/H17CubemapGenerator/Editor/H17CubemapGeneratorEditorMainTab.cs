@@ -128,6 +128,15 @@ namespace Hoshino17
 					break;
 			}
 
+			if (_context.pipelineType == RenderPipelineUtils.PipelineType.HDPipeline)
+			{
+				_context.exposureOverride = EditorGUILayout.Toggle(_context.GetText(TextId.ExposureOverride), _context.exposureOverride, GUILayout.Width(220));
+				EditorGUI.BeginDisabledGroup(!(_context.CanRender() && _context.exposureOverride));
+				_context.fixedExposure = EditorGUILayout.FloatField(_context.GetText(TextId.FixedExposure), _context.fixedExposure, GUILayout.Width(220));
+				_context.compensation = EditorGUILayout.FloatField(_context.GetText(TextId.Compensation), _context.compensation, GUILayout.Width(220));
+				EditorGUI.EndDisabledGroup();
+			}
+
 			EditorGUI.BeginDisabledGroup(!_context.CanRender());
 			if (GUILayout.Button(_context.GetText(TextId.Redraw), GUILayout.Width(120)))
 			{

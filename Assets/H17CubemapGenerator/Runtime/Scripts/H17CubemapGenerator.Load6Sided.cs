@@ -55,10 +55,10 @@ namespace Hoshino17
 			_6sidedSources[3] = _tex6SidedBottom;
 			_6sidedSources[4] = _tex6SidedFront;
 			_6sidedSources[5] = _tex6SidedBack;
-			var tex0 = _6sidedSources[0];
+			Texture2D tex0 = _6sidedSources[0]!;
 			for (int i = 0; i < 6; i++)
 			{
-				var tex = _6sidedSources[i];
+				Texture2D tex = _6sidedSources[i]!;
 				if (tex.width != tex.height ||
 					tex.width != tex0.width ||
 					tex.height != tex0.height)
@@ -79,8 +79,11 @@ namespace Hoshino17
 
 			for (int i = 0; i < 6; i++)
 			{
+				var source = _6sidedSources[i];
+				if (source == null) { throw new InvalidOperationException(); }
+
 				var face = (CubemapFace)i;
-				_cachedFaces[i] = TextureUtils.CreateReadabeTexture2D(_6sidedSources[i]);
+				_cachedFaces[i] = TextureUtils.CreateReadabeTexture2D(source);
 				var tex = _cachedFaces[i];
 				Graphics.SetRenderTarget(_cubemapRT, 0, face);
 				Graphics.Blit(tex, _materialBlitter, pass: 0);
@@ -99,8 +102,11 @@ namespace Hoshino17
 			_cubemapAlter = new Cubemap(texWidth, format, flags);
 			for (int i = 0; i < 6; i++)
 			{
+				var source = _6sidedSources[i];
+				if (source == null) { throw new InvalidOperationException(); }
+
 				var face = (CubemapFace)i;
-				_cachedFaces[i] = TextureUtils.CreateReadabeTexture2D(_6sidedSources[i]);
+				_cachedFaces[i] = TextureUtils.CreateReadabeTexture2D(source);
 				var pixels = _cachedFaces[i]!.GetPixels();
 				_cubemapAlter.SetPixels(pixels, face, 0);
 			}

@@ -20,54 +20,45 @@ namespace Hoshino17
 			_equirectanglarRotationEulerY = angleEulerY;
 		}
 
-		class SaveAsEquirectanglar : ICubemapSave
+		class SaveAsEquirectanglar : CubemapSaveBase
 		{
-			H17CubemapGenerator _generator;
+			public SaveAsEquirectanglar(H17CubemapGenerator generator) : base(generator) { }
 
-			public SaveAsEquirectanglar(H17CubemapGenerator generator)
+			public override IEnumerator SaveAsPNGCoroutine(string assetPath)
 			{
-				_generator = generator;
-			}
+				if (generator._materialBlitter == null) throw new InvalidOperationException($"{nameof(generator._materialBlitter)} null");
 
-			public void Dispose()
-			{
-			}
-
-			public IEnumerator SaveAsPNGCoroutine(string assetPath)
-			{
-				if (_generator._materialBlitter == null) throw new InvalidOperationException($"{nameof(_generator._materialBlitter)} null");
-
-				var targetSourceCamera = _generator.GetTargetCamera();
-				_generator._rendererCamera.CopyFrom(targetSourceCamera);
-				_generator._rendererCamera.gameObject.SetActive(true);
-				Camera? camera = _generator._rendererCamera;
+				var targetSourceCamera = generator.GetTargetCamera();
+				generator._rendererCamera.CopyFrom(targetSourceCamera);
+				generator._rendererCamera.gameObject.SetActive(true);
+				Camera? camera = generator._rendererCamera;
 
 				Texture? texCubemap = null;
-				if (_generator._cubemapRT != null)
+				if (generator._cubemapRT != null)
 				{
-					texCubemap = _generator._cubemapRT;
+					texCubemap = generator._cubemapRT;
 				}
-				else if (_generator._cubemapAlter != null)
+				else if (generator._cubemapAlter != null)
 				{
-					texCubemap = _generator._cubemapAlter;
+					texCubemap = generator._cubemapAlter;
 				}
 				else
 				{
-					texCubemap = _generator._texCubemap;
+					texCubemap = generator._texCubemap;
 				}
-				_generator._materialBlitter.SetTexture(_idCubeTex, texCubemap);
-				_generator._materialBlitter.SetFloat(_idRotationY, _generator._equirectanglarRotationEulerY * Mathf.Deg2Rad);
+				generator._materialBlitter.SetTexture(_idCubeTex, texCubemap);
+				generator._materialBlitter.SetFloat(_idRotationY, generator._equirectanglarRotationEulerY * Mathf.Deg2Rad);
 
-				var desc = _generator.GetRenderTextureDescriptorForOutoutTemporary(_generator._textureWidth * 2, _generator._textureWidth, false);
+				var desc = generator.GetRenderTextureDescriptorForOutoutTemporary(generator._textureWidth * 2, generator._textureWidth, false);
 				var tempRT = RenderTexture.GetTemporary(desc);
 
 				Graphics.SetRenderTarget(tempRT, 0, 0);
-				Graphics.Blit(tempRT, _generator._materialBlitter, pass: 1);
+				Graphics.Blit(tempRT, generator._materialBlitter, pass: 1);
 
 				RenderTexture previous = RenderTexture.active;
 				RenderTexture.active = tempRT;
 
-				var tempTex = _generator.CreateTexture2DForOutputTemporary(tempRT.width, tempRT.height);
+				var tempTex = generator.CreateTexture2DForOutputTemporary(tempRT.width, tempRT.height);
 				tempTex.ReadPixels(new Rect(0, 0, tempRT.width, tempRT.height), 0, 0);
 				tempTex.Apply();
 
@@ -78,9 +69,9 @@ namespace Hoshino17
 				RenderTexture.ReleaseTemporary(tempRT);
 				AssetDatabase.ImportAsset(assetPath);
 				H17CubemapGenerator.SetOutputSpecification(assetPath,
-					(_generator._isOutputCubemap ? TextureImporterShape.TextureCube : TextureImporterShape.Texture2D),
-					_generator._isOutputGenerateMipmap,
-					_generator._isOutputSRGB);
+					(generator._isOutputCubemap ? TextureImporterShape.TextureCube : TextureImporterShape.Texture2D),
+					generator._isOutputGenerateMipmap,
+					generator._isOutputSRGB);
 				AssetDatabase.Refresh();
 
 				yield break;
