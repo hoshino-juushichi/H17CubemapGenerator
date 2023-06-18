@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 
+#nullable enable
+
 namespace Hoshino17
 { 
 	public class RenderPipelineUtils : MonoBehaviour
