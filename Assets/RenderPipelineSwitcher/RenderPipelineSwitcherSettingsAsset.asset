@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94ee2e68b5e683847bed697bc4cde2fa, type: 3}
   m_Name: RenderPipelineSwitcherSettingsAsset
   m_EditorClassIdentifier: 
-  hdrpAsset: {fileID: 11400000, guid: b3583a532ffef17468c0c528767feea4, type: 2}
+  hdrpAsset: {fileID: 11400000, guid: 2a58b9e39f7ebdb4c90c97d4e2084109, type: 2}
   urpAsset: {fileID: 11400000, guid: 640a61afabc8ac840971b47b4158b12e, type: 2}
