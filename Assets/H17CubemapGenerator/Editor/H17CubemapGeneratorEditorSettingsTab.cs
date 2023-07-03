@@ -23,7 +23,7 @@ namespace Hoshino17
 			}
 
 			EditorGUI.BeginChangeCheck();
-			int languageIndex = context.supportedLanguages.IndexOf(context.language);
+			int languageIndex = context.supportedLanguages.IndexOf((x) => x == context.language);
 			languageIndex = EditorGUILayout.Popup(context.GetText(TextId.Language), languageIndex, _languageOptions, GUILayout.Width(220));
 			if (EditorGUI.EndChangeCheck())
 			{
